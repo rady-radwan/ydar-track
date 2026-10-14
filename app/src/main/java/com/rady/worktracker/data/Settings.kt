@@ -2,6 +2,14 @@ package com.rady.worktracker.data
 
 enum class ThemeMode(val label: String) { SYSTEM("Auto"), LIGHT("Light"), DARK("Dark") }
 
+/** Google fonts bundled with the app. */
+enum class AppFont(val label: String) {
+    GOOGLE_SANS("Google Sans"), INTER("Inter"), ROBOTO("Roboto"), MONTSERRAT("Montserrat"),
+    OPEN_SANS("Open Sans"), WORK_SANS("Work Sans"), LATO("Lato"), JOSEFIN_SANS("Josefin Sans"),
+}
+
+enum class BackupFrequency(val label: String) { OFF("Off"), DAILY("Every day"), WEEKLY("Every week") }
+
 /** App preferences (kept separately from your tracked data). */
 data class Settings(
     val theme: ThemeMode = ThemeMode.DARK,
@@ -16,6 +24,15 @@ data class Settings(
     /** Rank pop-up when the app opens. */
     val rankPopup: Boolean = true,
     val rankSound: Boolean = true,
+    val font: AppFont = AppFont.GOOGLE_SANS,
+    /** Google Drive backup. */
+    val driveConnected: Boolean = false,
+    val driveEmail: String? = null,
+    val backupFrequency: BackupFrequency = BackupFrequency.OFF,
+    val backupWifiOnly: Boolean = false,
+    val keepBackups: Int = 10,
+    val lastBackupAt: Long = 0L,
+    val lastBackupStatus: String = "",
 )
 
 enum class TimerEvent { LAP, HALF, FIVE_LEFT, END }

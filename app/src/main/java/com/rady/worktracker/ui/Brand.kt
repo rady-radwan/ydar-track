@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,13 +47,13 @@ const val SLOGAN = "Build yourself, one hour at a time."
 /** The Ydar Track logo: a head built like a construction project. */
 @Composable
 fun LogoMark(size: Dp) {
-    Image(painterResource(R.drawable.logo_mark), contentDescription = "Ydar Track logo", modifier = Modifier.size(size))
+    Image(painterResource(R.drawable.logo_mark), contentDescription = "Ydar Track logo", modifier = Modifier.height(size).aspectRatio(520f / 631f))
 }
 
 /** "YDAR TRACK" with the Y in gold. */
 @Composable
 fun Wordmark(fontSize: TextUnit = 34.sp, color: Color = P.ink) {
-    val style = MaterialTheme.typography.headlineLarge.copy(fontSize = fontSize, lineHeight = fontSize * 1.05f)
+    val style = MaterialTheme.typography.headlineLarge.copy(fontSize = fontSize, lineHeight = fontSize * 1.1f, letterSpacing = 1.sp)
     Row {
         Text("Y", style = style, color = P.accent)
         Text("DAR TRACK", style = style, color = color)
@@ -60,7 +61,7 @@ fun Wordmark(fontSize: TextUnit = 34.sp, color: Color = P.ink) {
 }
 
 /**
- * Home header: a construction skyline at golden hour, the logo, a greeting,
+ * Home header (compact): a construction skyline at golden hour, the logo, a greeting,
  * today's line, and a gold call-to-action strip.
  */
 @Composable
@@ -74,16 +75,16 @@ fun HomeBanner(
     val p = P
     val sky = if (p.dark) listOf(Color(0xFF2A2214), p.banner, p.banner) else listOf(Color(0xFFFFE7B0), p.banner, p.banner)
     Column(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).border(1.dp, p.border, RoundedCornerShape(18.dp))) {
-        Box(Modifier.fillMaxWidth().height(196.dp).background(Brush.verticalGradient(sky))) {
+        Box(Modifier.fillMaxWidth().height(148.dp).background(Brush.verticalGradient(sky))) {
             Canvas(Modifier.fillMaxSize()) { drawSkyline(p.bannerSkyline, p.accent) }
-            Box(Modifier.align(Alignment.CenterEnd).padding(end = 4.dp, bottom = 26.dp)) { LogoMark(150.dp) }
-            Column(Modifier.align(Alignment.TopStart).padding(start = 16.dp, top = 14.dp, end = 150.dp)) {
-                Wordmark(26.sp)
-                Spacer(Modifier.height(10.dp))
-                Text(greeting, style = MaterialTheme.typography.bodyMedium, color = p.inkMuted)
+            Box(Modifier.align(Alignment.BottomEnd).padding(end = 10.dp)) { LogoMark(136.dp) }
+            Column(Modifier.align(Alignment.TopStart).padding(start = 16.dp, top = 12.dp, end = 118.dp)) {
+                Wordmark(20.sp)
+                Spacer(Modifier.height(8.dp))
+                Text(greeting, style = MaterialTheme.typography.bodySmall, color = p.inkMuted)
                 Text("Keep building.", style = MaterialTheme.typography.headlineMedium, color = p.ink)
-                Spacer(Modifier.height(4.dp))
-                Text(quote, style = MaterialTheme.typography.bodySmall, color = p.inkMuted, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                Spacer(Modifier.height(2.dp))
+                Text(quote, style = MaterialTheme.typography.bodySmall, color = p.inkMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
         }
         Surface(
@@ -95,7 +96,7 @@ fun HomeBanner(
             Text(
                 strip, color = p.onAccent, style = MaterialTheme.typography.titleMedium,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp),
             )
         }
     }

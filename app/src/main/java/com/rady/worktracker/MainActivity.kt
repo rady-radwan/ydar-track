@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose {}
             }
-            WorkTrackerTheme(dark = dark) {
+            WorkTrackerTheme(dark = dark, font = settings.font) {
                 App()
             }
         }

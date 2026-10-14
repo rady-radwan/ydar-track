@@ -30,6 +30,15 @@ object AppSettings {
             endOn = prefs.getBoolean("endOn", d.endOn),
             rankPopup = prefs.getBoolean("rankPopup", d.rankPopup),
             rankSound = prefs.getBoolean("rankSound", d.rankSound),
+            font = runCatching { AppFont.valueOf(prefs.getString("font", d.font.name)!!) }.getOrDefault(d.font),
+            driveConnected = prefs.getBoolean("driveConnected", d.driveConnected),
+            driveEmail = prefs.getString("driveEmail", null),
+            backupFrequency = runCatching { BackupFrequency.valueOf(prefs.getString("backupFrequency", d.backupFrequency.name)!!) }
+                .getOrDefault(d.backupFrequency),
+            backupWifiOnly = prefs.getBoolean("backupWifiOnly", d.backupWifiOnly),
+            keepBackups = prefs.getInt("keepBackups", d.keepBackups),
+            lastBackupAt = prefs.getLong("lastBackupAt", d.lastBackupAt),
+            lastBackupStatus = prefs.getString("lastBackupStatus", d.lastBackupStatus) ?: "",
         )
         // v4: the app's look is dark gold — switch to Dark once (can be changed in Settings).
         if (!prefs.getBoolean("v4ThemeDark", false)) {
@@ -62,6 +71,14 @@ object AppSettings {
             .putBoolean("endOn", s.endOn)
             .putBoolean("rankPopup", s.rankPopup)
             .putBoolean("rankSound", s.rankSound)
+            .putString("font", s.font.name)
+            .putBoolean("driveConnected", s.driveConnected)
+            .putString("driveEmail", s.driveEmail)
+            .putString("backupFrequency", s.backupFrequency.name)
+            .putBoolean("backupWifiOnly", s.backupWifiOnly)
+            .putInt("keepBackups", s.keepBackups)
+            .putLong("lastBackupAt", s.lastBackupAt)
+            .putString("lastBackupStatus", s.lastBackupStatus)
             .apply()
     }
 }

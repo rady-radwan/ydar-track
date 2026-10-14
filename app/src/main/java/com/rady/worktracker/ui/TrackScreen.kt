@@ -67,6 +67,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -94,7 +95,7 @@ import java.time.ZoneId
 
 private enum class TimerMode { OPEN, COUNTDOWN }
 
-private val Presets = listOf(25, 45, 60, 90, 120, 180)
+private val Presets = listOf(25, 45, 60, 90, 120, 180, 240)
 private val LapChoices = listOf(15, 25, 30, 45, 60)
 
 fun minutesLabel(min: Int): String = when {
@@ -198,54 +199,39 @@ fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowR
             }
         }
 
-        // Dashboard tiles
+        // Dashboard tiles: four equal, compact tiles
         item(key = "tiles") {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Tile("Today", Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            GoalRing(todayTotal.toFloat() / (settings.dailyGoalMin * 60_000f).coerceAtLeast(1f), Modifier.size(54.dp))
-                            Spacer(Modifier.width(10.dp))
-                            Column {
-                                Text(formatDuration(todayTotal), style = MaterialTheme.typography.headlineMedium, color = P.accent)
-                                Text("of ${minutesLabel(settings.dailyGoalMin)} goal", style = MaterialTheme.typography.bodySmall, color = P.inkMuted)
-                            }
-                        }
-                        Spacer(Modifier.height(6.dp))
-                        val diff = todayTotal - yesterdayTotal
-                        Text(
-                            when {
-                                yesterdayTotal == 0L && todayTotal == 0L -> "Fresh start today"
-                                diff >= 0 -> "▲ ${formatDuration(diff)} vs yesterday"
-                                else -> "▼ ${formatDuration(-diff)} vs yesterday"
-                            },
-                            style = MaterialTheme.typography.labelSmall, color = if (diff >= 0) P.info else P.inkMuted,
-                        )
-                    }
-                    Tile("This week", Modifier.weight(1f)) {
-                        Text(formatDuration(week.avgPerDay), style = MaterialTheme.typography.displaySmall, color = P.accent)
-                        Text("average per day", style = MaterialTheme.typography.bodySmall, color = P.inkMuted)
-                        Spacer(Modifier.height(6.dp))
-                        Text("${formatDuration(week.total)} total", style = MaterialTheme.typography.labelSmall, color = P.info)
-                    }
+            val goalMs = (settings.dailyGoalMin * 60_000f).coerceAtLeast(1f)
+            val diff = todayTotal - yesterdayTotal
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    StatTile(
+                        label = "Today", value = formatDuration(todayTotal),
+                        sub = when {
+                            yesterdayTotal == 0L && todayTotal == 0L -> "of ${minutesLabel(settings.dailyGoalMin)} goal"
+                            diff >= 0 -> "▲ ${formatDuration(diff)} vs yesterday"
+                            else -> "▼ ${formatDuration(-diff)} vs yesterday"
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) { GoalRing(todayTotal / goalMs, Modifier.size(44.dp)) }
+                    StatTile(
+                        label = "This week", value = formatDuration(week.avgPerDay),
+                        sub = "a day · ${formatDuration(week.total)} total", modifier = Modifier.weight(1f),
+                    ) { TileIcon(BarChartIcon, P.info) }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Tile("Streak", Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(FlameIcon, contentDescription = null, tint = if (streak > 0) P.alert else P.inkMuted, modifier = Modifier.size(30.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("$streak", style = MaterialTheme.typography.displaySmall, color = P.accent)
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    StatTile(
+                        label = "Streak", value = "$streak",
+                        sub = if (streak == 1) "day in a row" else "days in a row", modifier = Modifier.weight(1f),
+                    ) { TileIcon(FlameIcon, if (streak > 0) P.alert else P.inkMuted) }
+                    StatTile(
+                        label = "Legacy", value = "${legacy.floors}",
+                        sub = "floor${if (legacy.floors == 1) "" else "s"} · ${formatDuration(legacy.totalMs)} built",
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(P.slabRaised), contentAlignment = Alignment.Center) {
+                            LegacyTower(legacy, Modifier.size(28.dp, 34.dp))
                         }
-                        Text(if (streak == 1) "day in a row" else "days in a row", style = MaterialTheme.typography.bodySmall, color = P.inkMuted)
-                    }
-                    Tile("Legacy", Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            LegacyTower(legacy, Modifier.size(30.dp, 38.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("${legacy.floors}", style = MaterialTheme.typography.displaySmall, color = P.accent)
-                        }
-                        Text("floor${if (legacy.floors == 1) "" else "s"} · ${formatDuration(legacy.totalMs)} built",
-                            style = MaterialTheme.typography.bodySmall, color = P.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
@@ -262,8 +248,11 @@ fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowR
             }
         } else {
             item(key = "mode") {
-                Slab {
-                    SectionTitle(if (active == null) "Start a session" else "Switch project")
+                Slab(padding = 14.dp) {
+                    Text(
+                        if (active == null) "START A SESSION" else "SWITCH PROJECT",
+                        style = MaterialTheme.typography.headlineSmall, color = P.ink,
+                    )
                     Spacer(Modifier.height(10.dp))
                     Segmented(
                         options = listOf(TimerMode.OPEN to "Open timer", TimerMode.COUNTDOWN to "Countdown"),
@@ -271,36 +260,34 @@ fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowR
                     )
                     Spacer(Modifier.height(12.dp))
                     if (mode == TimerMode.COUNTDOWN) {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Presets.forEach { m -> DurationChip(minutesLabel(m), selected = minutes == m) { minutes = m } }
-                            DurationChip(if (minutes !in Presets) minutesLabel(minutes) else "Custom", selected = minutes !in Presets) { showCustom = true }
-                        }
-                        Spacer(Modifier.height(10.dp))
+                        val labels = Presets.map { minutesLabel(it) } + (if (minutes !in Presets) minutesLabel(minutes) else "Custom")
+                        val sel = Presets.indexOf(minutes).let { if (it >= 0) it else Presets.size }
+                        ChoiceGrid(labels, sel, perRow = 4, onSelect = { i -> if (i < Presets.size) minutes = Presets[i] else showCustom = true })
+                        Spacer(Modifier.height(8.dp))
                         val alerts = buildList {
                             if (settings.halfOn && minutes >= 4) add("halfway")
                             if (settings.fiveOn && minutes > 10) add("5 min left")
                             if (settings.endOn) add("the end")
                         }
                         Text(
-                            "Counts down from ${minutesLabel(minutes)}, then saves the session." +
-                                if (alerts.isNotEmpty()) " Sounds at ${alerts.joinToString(", ")}." else "",
+                            "Saves the session when time is up." + if (alerts.isNotEmpty()) " Sounds at ${alerts.joinToString(", ")}." else "",
                             style = MaterialTheme.typography.bodySmall, color = P.inkMuted,
+                            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
-                        Text("Lap chime", style = MaterialTheme.typography.labelMedium, color = P.inkMuted)
+                        Text("LAP CHIME", style = MaterialTheme.typography.labelMedium, color = P.inkMuted)
                         Spacer(Modifier.height(6.dp))
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            DurationChip("Off", selected = !settings.lapOn) { vm.updateSettings { it.copy(lapOn = false) } }
-                            LapChoices.forEach { m ->
-                                DurationChip("Every ${minutesLabel(m)}", selected = settings.lapOn && settings.lapMin == m) {
-                                    vm.updateSettings { it.copy(lapOn = true, lapMin = m) }
-                                }
-                            }
-                        }
-                        Spacer(Modifier.height(10.dp))
+                        val labels = listOf("Off") + LapChoices.map { minutesLabel(it) }
+                        val sel = if (!settings.lapOn) 0 else LapChoices.indexOf(settings.lapMin).let { if (it >= 0) it + 1 else -1 }
+                        ChoiceGrid(labels, sel, perRow = labels.size, onSelect = { i ->
+                            if (i == 0) vm.updateSettings { it.copy(lapOn = false) }
+                            else vm.updateSettings { it.copy(lapOn = true, lapMin = LapChoices[i - 1]) }
+                        })
+                        Spacer(Modifier.height(8.dp))
                         Text(
-                            "Counts up until you stop it." + if (settings.lapOn) " A chime plays every ${minutesLabel(settings.lapMin)}." else "",
+                            "Counts up until you stop it." + if (settings.lapOn) " Chime every ${minutesLabel(settings.lapMin)}." else "",
                             style = MaterialTheme.typography.bodySmall, color = P.inkMuted,
+                            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
@@ -396,12 +383,26 @@ fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowR
     }
 }
 
+/** A compact dashboard tile: picture on the left, label / big value / one line of detail on the right. */
 @Composable
-fun Tile(label: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Slab(modifier = modifier, padding = 14.dp) {
-        Text(label.uppercase(), style = MaterialTheme.typography.headlineSmall.copy(fontSize = MaterialTheme.typography.titleLarge.fontSize), color = P.ink)
-        Spacer(Modifier.height(8.dp))
-        content()
+fun StatTile(label: String, value: String, sub: String, modifier: Modifier = Modifier, visual: @Composable () -> Unit) {
+    Slab(modifier = modifier.height(92.dp), padding = 12.dp) {
+        Row(Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
+            visual()
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(label.uppercase(), style = MaterialTheme.typography.labelMedium, color = P.inkMuted, maxLines = 1)
+                Text(value, style = MaterialTheme.typography.displaySmall, color = P.accent, maxLines = 1)
+                Text(sub, style = MaterialTheme.typography.labelSmall, color = P.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TileIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, tint: Color) {
+    Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(tint.copy(alpha = 0.14f)), contentAlignment = Alignment.Center) {
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(24.dp))
     }
 }
 
@@ -489,7 +490,7 @@ private fun ActiveCard(
             modifier = Modifier.fillMaxWidth().height(270.dp),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(big, style = MaterialTheme.typography.displayLarge, color = P.ink)
+                Text(big, style = MaterialTheme.typography.displayMedium, color = P.ink)
                 Text(small, style = MaterialTheme.typography.bodyMedium, color = P.inkMuted)
                 if (target != null) {
                     Spacer(Modifier.height(2.dp))
@@ -525,7 +526,7 @@ private fun ActiveCard(
                 Spacer(Modifier.width(8.dp))
                 Text(
                     if (target != null) "END NOW · SAVE ${formatDuration(elapsed).uppercase()}" else "STOP & SAVE",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontSize = MaterialTheme.typography.titleLarge.fontSize),
+                    style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                 )
             }

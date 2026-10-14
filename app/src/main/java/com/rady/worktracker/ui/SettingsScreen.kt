@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rady.worktracker.TrackerViewModel
 import com.rady.worktracker.data.AppData
+import com.rady.worktracker.data.AppFont
 import com.rady.worktracker.data.Settings
 import com.rady.worktracker.data.ThemeMode
 import com.rady.worktracker.data.TimerEvent
@@ -67,8 +68,27 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
                 )
                 Spacer(Modifier.height(6.dp))
                 Text("Auto follows your phone's dark mode.", style = MaterialTheme.typography.bodySmall, color = P.inkMuted)
+                Spacer(Modifier.height(14.dp))
+                Text("FONT", style = MaterialTheme.typography.labelMedium, color = P.inkMuted)
+                Spacer(Modifier.height(8.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AppFont.entries.forEach { f ->
+                        val on = settings.font == f
+                        Surface(
+                            onClick = { set { it.copy(font = f) } }, shape = RoundedCornerShape(12.dp),
+                            color = if (on) P.accent else P.slabRaised, contentColor = if (on) P.onAccent else P.ink,
+                        ) {
+                            Text(
+                                f.label, Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                                style = MaterialTheme.typography.labelLarge.copy(fontFamily = fontFamilyFor(f)),
+                            )
+                        }
+                    }
+                }
             }
         }
+
+        item { DriveBackupCard(settings, vm) }
 
         item {
             Slab {
@@ -155,7 +175,7 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
                     Text(SLOGAN, style = MaterialTheme.typography.bodyMedium, color = P.inkMuted)
                     Text("You are your greatest project. Keep building.", style = MaterialTheme.typography.bodySmall, color = P.accent)
                     Spacer(Modifier.height(8.dp))
-                    Text("Version 4.0 · Your data stays on this phone.", style = MaterialTheme.typography.labelSmall, color = P.inkMuted)
+                    Text("Version ${com.rady.worktracker.BuildConfig.VERSION_NAME} · Your data stays on this phone unless you back it up to Drive.", style = MaterialTheme.typography.labelSmall, color = P.inkMuted)
                 }
             }
         }

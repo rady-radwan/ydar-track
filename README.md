@@ -1,8 +1,28 @@
-# Ydar Track — Android app (v4)
+# Ydar Track — Android app (v5)
 
 **Build yourself, one hour at a time.**
 
 Track how much time you spend on each project and subproject, climb 10 ranks every week, grow your lifetime legacy, and see it all in charts.
+
+## What's new in v5
+- **Your logo** (the golden head built like a concrete tower with scaffolding) as the app icon, themed icon, notification icon and in the app.
+- **Google fonts**: Google Sans by default; switch to Inter, Roboto, Montserrat, Open Sans, Work Sans, Lato or Josefin Sans in *Settings › Appearance*.
+- **Google Drive backup**: connect once, then back up **every day** or **every week** automatically, or tap **Back up now**. Restore any backup from the list. Keeps the last 5, 10 or 30.
+- Tidier home: a smaller banner, four compact equal tiles, and a cleaner *Start a session* card (one row of lap-chime choices; countdown lengths in an even grid).
+- Every build is signed with one permanent key, so new versions always install over the old one and keep your data.
+
+## Connect Google Drive backup (one-time, ~3 minutes)
+
+Google only lets an app use Drive after it's registered in a Google Cloud project. You can reuse the project you made for Reverday (the Drive API and consent screen are already set up there):
+
+1. Open <https://console.cloud.google.com/> with the Google account you'll back up to, and pick your project (or create one, enable **Google Drive API**, and set up the **OAuth consent screen** as *External*, published to *In production*).
+2. **APIs & Services › Credentials › Create credentials › OAuth client ID** → Application type **Android**:
+   - Package name: `com.rady.worktracker`
+   - SHA-1 certificate fingerprint: `1F:50:5C:91:0E:5B:E7:3B:F0:AF:A4:F2:5F:A9:FC:18:41:58:71:B5`
+   - Create.
+3. In the app: **Settings › Google Drive backup › Connect Google Drive**, pick your account and allow. Choose **Every day** or **Every week**, or tap **Back up now**.
+
+Backups are small `.json` files in a **Ydar Track Backups** folder in your Drive. The app can only see the files it creates there.
 
 ## What's new in v4
 - **New logo**: a head built like a construction project — half golden low-poly face, half concrete building with scaffolding and a crane. New app icon (with themed/monochrome icon) and notification icon.
@@ -50,7 +70,8 @@ Track how much time you spend on each project and subproject, climb 10 ranks eve
 Your data stays on your phone. Android's automatic backup includes it when backup is on.
 
 ## Building
-Open the folder in Android Studio, then **Build → Generate App Bundles or APKs → Generate APKs**.
-The APK is at `app/build/outputs/apk/debug/app-debug.apk`.
+Every push to GitHub builds a signed APK and publishes it on the repository's **Releases** page — open it on your phone and install.
 
-Font: Barlow by Jeremy Tribby, SIL Open Font License.
+To build on a PC: decode the signing key once (`keystore/ydartrack.jks.b64` → `keystore/ydartrack.jks`, e.g. `certutil -decode keystore\ydartrack.jks.b64 keystore\ydartrack.jks` on Windows), open the folder in Android Studio, then **Build → Generate App Bundles or APKs → Generate APKs**.
+
+Fonts: Google Sans, Inter, Roboto, Montserrat, Open Sans, Work Sans, Lato, Josefin Sans — SIL Open Font License.

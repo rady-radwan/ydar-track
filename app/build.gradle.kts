@@ -4,6 +4,9 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+val runNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 0
+val keystoreFile = rootProject.file("keystore/ydartrack.jks")
+
 android {
     namespace = "com.rady.worktracker"
     compileSdk = 35
@@ -13,13 +16,29 @@ android {
         applicationId = "com.rady.worktracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "4.0"
+        // v4 was 4; every GitHub build counts up from there so updates always install.
+        versionCode = 10 + runNumber
+        versionName = "5.0.$runNumber"
+    }
+
+    signingConfigs {
+        create("ydar") {
+            storeFile = keystoreFile
+            storePassword = "ydartrack2026"
+            keyAlias = "ydartrack"
+            keyPassword = "ydartrack2026"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (keystoreFile.exists()) signingConfig = signingConfigs.getByName("ydar")
+        }
+        debug {
+            // One permanent key, so every new build installs over the old one
+            // and Google Drive sign-in recognises the app.
+            if (keystoreFile.exists()) signingConfig = signingConfigs.getByName("ydar")
         }
     }
 
@@ -34,6 +53,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -50,5 +70,10 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-core")
+
+    // Google Drive backup
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

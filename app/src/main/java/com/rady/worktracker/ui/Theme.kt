@@ -9,6 +9,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -18,26 +19,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rady.worktracker.R
+import com.rady.worktracker.data.AppFont
 
 /*
  * Ydar Track visual identity: build yourself like a construction project.
  * Charcoal and concrete with construction-gold accents, outlined tiles,
- * and bold condensed uppercase titles. Dark by default; a light theme is available.
+ * and clean Google-font titles. Dark by default; a light theme is available.
  */
 
-val Barlow = FontFamily(
-    Font(R.font.barlow_400, FontWeight.Normal),
-    Font(R.font.barlow_500, FontWeight.Medium),
-    Font(R.font.barlow_600, FontWeight.SemiBold),
-    Font(R.font.barlow_700, FontWeight.Bold),
+private fun family(r400: Int, r500: Int, r600: Int, r700: Int) = FontFamily(
+    Font(r400, FontWeight.Normal),
+    Font(r500, FontWeight.Medium),
+    Font(r600, FontWeight.SemiBold),
+    Font(r700, FontWeight.Bold),
 )
 
-/** Condensed face for titles, tile labels and big numbers. */
-val BarlowCondensed = FontFamily(
-    Font(R.font.barlow_condensed_500, FontWeight.Medium),
-    Font(R.font.barlow_condensed_600, FontWeight.SemiBold),
-    Font(R.font.barlow_condensed_700, FontWeight.Bold),
-)
+fun fontFamilyFor(font: AppFont): FontFamily = when (font) {
+    AppFont.GOOGLE_SANS -> family(R.font.googlesans_400, R.font.googlesans_500, R.font.googlesans_600, R.font.googlesans_700)
+    AppFont.INTER -> family(R.font.inter_400, R.font.inter_500, R.font.inter_600, R.font.inter_700)
+    AppFont.ROBOTO -> family(R.font.roboto_400, R.font.roboto_500, R.font.roboto_600, R.font.roboto_700)
+    AppFont.MONTSERRAT -> family(R.font.montserrat_400, R.font.montserrat_500, R.font.montserrat_600, R.font.montserrat_700)
+    AppFont.OPEN_SANS -> family(R.font.opensans_400, R.font.opensans_500, R.font.opensans_600, R.font.opensans_700)
+    AppFont.WORK_SANS -> family(R.font.worksans_400, R.font.worksans_500, R.font.worksans_600, R.font.worksans_700)
+    AppFont.LATO -> family(R.font.lato_400, R.font.lato_500, R.font.lato_600, R.font.lato_700)
+    AppFont.JOSEFIN_SANS -> family(R.font.josefinsans_400, R.font.josefinsans_500, R.font.josefinsans_600, R.font.josefinsans_700)
+}
 
 @Immutable
 data class Palette(
@@ -100,30 +106,29 @@ val LocalPalette = staticCompositionLocalOf { DarkPalette }
 val P: Palette
     @Composable get() = LocalPalette.current
 
-private fun typography(): Typography {
-    val body = TextStyle(fontFamily = Barlow)
-    val cond = TextStyle(fontFamily = BarlowCondensed)
+private fun typography(font: AppFont): Typography {
+    val f = TextStyle(fontFamily = fontFamilyFor(font))
     return Typography(
-        displayLarge = cond.copy(fontWeight = FontWeight.SemiBold, fontSize = 72.sp, lineHeight = 74.sp, fontFeatureSettings = "tnum"),
-        displayMedium = cond.copy(fontWeight = FontWeight.SemiBold, fontSize = 56.sp, lineHeight = 58.sp, fontFeatureSettings = "tnum"),
-        displaySmall = cond.copy(fontWeight = FontWeight.SemiBold, fontSize = 40.sp, lineHeight = 44.sp, fontFeatureSettings = "tnum"),
-        headlineLarge = cond.copy(fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = 38.sp, letterSpacing = 0.5.sp),
-        headlineMedium = cond.copy(fontWeight = FontWeight.Bold, fontSize = 28.sp, lineHeight = 32.sp, letterSpacing = 0.4.sp),
-        headlineSmall = cond.copy(fontWeight = FontWeight.SemiBold, fontSize = 24.sp, lineHeight = 28.sp),
-        titleLarge = body.copy(fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 26.sp),
-        titleMedium = body.copy(fontWeight = FontWeight.SemiBold, fontSize = 17.sp, lineHeight = 22.sp),
-        titleSmall = body.copy(fontWeight = FontWeight.SemiBold, fontSize = 15.sp, lineHeight = 20.sp),
-        bodyLarge = body.copy(fontWeight = FontWeight.Normal, fontSize = 17.sp, lineHeight = 24.sp),
-        bodyMedium = body.copy(fontWeight = FontWeight.Normal, fontSize = 15.sp, lineHeight = 21.sp),
-        bodySmall = body.copy(fontWeight = FontWeight.Normal, fontSize = 13.sp, lineHeight = 18.sp),
-        labelLarge = body.copy(fontWeight = FontWeight.SemiBold, fontSize = 15.sp, lineHeight = 20.sp),
-        labelMedium = cond.copy(fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.6.sp),
-        labelSmall = body.copy(fontWeight = FontWeight.Medium, fontSize = 11.sp, lineHeight = 14.sp, fontFeatureSettings = "tnum"),
+        displayLarge = f.copy(fontWeight = FontWeight.SemiBold, fontSize = 60.sp, lineHeight = 64.sp, fontFeatureSettings = "tnum"),
+        displayMedium = f.copy(fontWeight = FontWeight.SemiBold, fontSize = 46.sp, lineHeight = 50.sp, fontFeatureSettings = "tnum"),
+        displaySmall = f.copy(fontWeight = FontWeight.Bold, fontSize = 30.sp, lineHeight = 34.sp, fontFeatureSettings = "tnum"),
+        headlineLarge = f.copy(fontWeight = FontWeight.Bold, fontSize = 26.sp, lineHeight = 31.sp),
+        headlineMedium = f.copy(fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 27.sp),
+        headlineSmall = f.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 23.sp),
+        titleLarge = f.copy(fontWeight = FontWeight.SemiBold, fontSize = 18.sp, lineHeight = 24.sp),
+        titleMedium = f.copy(fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 21.sp),
+        titleSmall = f.copy(fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 19.sp),
+        bodyLarge = f.copy(fontWeight = FontWeight.Normal, fontSize = 16.sp, lineHeight = 23.sp),
+        bodyMedium = f.copy(fontWeight = FontWeight.Normal, fontSize = 14.sp, lineHeight = 20.sp),
+        bodySmall = f.copy(fontWeight = FontWeight.Normal, fontSize = 12.5.sp, lineHeight = 17.sp),
+        labelLarge = f.copy(fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 19.sp),
+        labelMedium = f.copy(fontWeight = FontWeight.Bold, fontSize = 11.5.sp, lineHeight = 15.sp, letterSpacing = 0.8.sp),
+        labelSmall = f.copy(fontWeight = FontWeight.Medium, fontSize = 11.sp, lineHeight = 14.sp, fontFeatureSettings = "tnum"),
     )
 }
 
 @Composable
-fun WorkTrackerTheme(dark: Boolean, content: @Composable () -> Unit) {
+fun WorkTrackerTheme(dark: Boolean, font: AppFont = AppFont.GOOGLE_SANS, content: @Composable () -> Unit) {
     val p = if (dark) DarkPalette else LightPalette
     val scheme = if (dark) {
         darkColorScheme(
@@ -157,7 +162,7 @@ fun WorkTrackerTheme(dark: Boolean, content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalPalette provides p) {
         MaterialTheme(
             colorScheme = scheme,
-            typography = typography(),
+            typography = remember(font) { typography(font) },
             shapes = Shapes(
                 extraSmall = RoundedCornerShape(6.dp),
                 small = RoundedCornerShape(10.dp),

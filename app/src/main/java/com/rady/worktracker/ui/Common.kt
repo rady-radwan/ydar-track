@@ -309,16 +309,16 @@ fun <T> Segmented(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> 
             Surface(
                 onClick = { onSelect(value) },
                 shape = RoundedCornerShape(50),
-                color = if (on) P.slab else Color.Transparent,
-                shadowElevation = if (on) 1.dp else 0.dp,
+                color = if (on) P.accent else Color.Transparent,
                 modifier = Modifier.weight(1f),
             ) {
                 Text(
                     label,
-                    modifier = Modifier.padding(vertical = 10.dp),
+                    modifier = Modifier.padding(vertical = 8.dp),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.labelLarge,
-                    color = if (on) P.ink else P.inkMuted,
+                    color = if (on) P.onAccent else P.inkMuted,
+                    maxLines = 1,
                 )
             }
         }
@@ -376,5 +376,32 @@ fun TotalGoalBar(goal: com.rady.worktracker.data.GoalProgress, color: Color, mod
             },
             style = MaterialTheme.typography.labelSmall, color = P.inkMuted,
         )
+    }
+}
+
+/** Equal-width choice buttons in centred rows of [perRow] — tidy grids for durations. */
+@Composable
+fun ChoiceGrid(labels: List<String>, selected: Int, onSelect: (Int) -> Unit, perRow: Int, modifier: Modifier = Modifier) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        labels.indices.chunked(perRow).forEach { row ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { i ->
+                    val on = i == selected
+                    Surface(
+                        onClick = { onSelect(i) },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (on) P.accent else P.slabRaised,
+                        contentColor = if (on) P.onAccent else P.ink,
+                        modifier = Modifier.weight(1f).height(40.dp),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(labels[i], style = MaterialTheme.typography.labelLarge, maxLines = 1, textAlign = TextAlign.Center)
+                        }
+                    }
+                }
+                // keep the last row's buttons the same width as the others
+                repeat(perRow - row.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
     }
 }
