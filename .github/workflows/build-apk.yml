@@ -2,9 +2,14 @@ name: Build APK
 
 # Runs every time you upload changes, and can also be started by hand
 # from the "Actions" tab with the "Run workflow" button.
+# Each build is published as a Release, so the APK can be downloaded
+# straight to a phone from the repository's "Releases" page.
 on:
   push:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -27,8 +32,24 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
+      - name: Name the APK
+        run: |
+          VERSION=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          cp app/build/outputs/apk/debug/app-debug.apk "YdarTrack-v$VERSION.apk"
+
       - name: Save the APK
         uses: actions/upload-artifact@v4
         with:
-          name: YdarTrack-v4-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: YdarTrack-apk
+          path: YdarTrack-v*.apk
+
+      - name: Publish as a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${VERSION}-build${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" "YdarTrack-v${VERSION}.apk" \
+            --title "Ydar Track ${VERSION} (build ${GITHUB_RUN_NUMBER})" \
+            --notes "Install: open this page on your phone, tap the APK, then Install. Your data is kept when updating." \
+            --latest
