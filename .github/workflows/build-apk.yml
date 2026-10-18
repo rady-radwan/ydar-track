@@ -55,6 +55,12 @@ jobs:
           WID=$(DISPLAY=:99 xdotool search --name "Ydar Track" | head -1)
           DISPLAY=:99 xdotool mousemove --window "$WID" 280 600 click 5 click 5 click 5 click 5 click 5; sleep 3
           DISPLAY=:99 import -window root /tmp/report/desktop-3-scrolled.png
+          DISPLAY=:99 xdotool mousemove --window "$WID" 280 600 click 5 click 5 click 5 click 5 click 5 click 5; sleep 3
+          DISPLAY=:99 import -window root /tmp/report/desktop-4-start.png
+          DISPLAY=:99 xdotool mousemove --window "$WID" 507 925 click 1; sleep 3
+          DISPLAY=:99 import -window root /tmp/report/desktop-5-settings.png
+          DISPLAY=:99 xdotool mousemove --window "$WID" 280 600 click 5 click 5 click 5 click 5 click 5 click 5; sleep 3
+          DISPLAY=:99 import -window root /tmp/report/desktop-6-settings2.png
           tail -40 desktop-run.log > /tmp/report/desktop-run.txt
 
       - name: Test sync (engine + live Supabase)
