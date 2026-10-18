@@ -33,6 +33,9 @@ data class Settings(
     val keepBackups: Int = 10,
     val lastBackupAt: Long = 0L,
     val lastBackupStatus: String = "",
+    /** Last timer mode and countdown length picked on the Track screen. */
+    val countdownMode: Boolean = false,
+    val countdownMinutes: Int = 60,
 )
 
 enum class TimerEvent { LAP, HALF, FIVE_LEFT, END }

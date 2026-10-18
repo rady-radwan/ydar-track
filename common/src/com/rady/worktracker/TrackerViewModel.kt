@@ -1,8 +1,8 @@
 package com.rady.worktracker
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import java.io.File
 import com.rady.worktracker.data.CloudSync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -19,7 +19,6 @@ import com.rady.worktracker.data.Settings
 import com.rady.worktracker.data.ProjectPalette
 import com.rady.worktracker.data.Repo
 import com.rady.worktracker.data.Session
-import com.rady.worktracker.timer.TimerSync
 import kotlinx.coroutines.flow.StateFlow
 
 /** What the sync is doing, for the Refresh button and Settings. */
@@ -34,19 +33,27 @@ data class CloudStatus(
 
 object Cloud {
     @Volatile private var instance: CloudSync? = null
-    fun get(app: Application): CloudSync = instance ?: synchronized(this) {
-        instance ?: CloudSync(app.filesDir).also { instance = it }
+    fun get(dir: File): CloudSync = instance ?: synchronized(this) {
+        instance ?: CloudSync(dir).also { instance = it }
     }
 }
 
-@OptIn(FlowPreview::class)
-class TrackerViewModel(private val app: Application) : AndroidViewModel(app) {
+/** What each platform does when the timer changes (Android: notification + alarms; Windows: tray alerts). */
+interface PlatformHooks {
+    fun timerChanged(data: AppData)
+    fun countdownFinished(data: AppData, projectId: Long, durationMs: Long)
+}
 
-    init { Repo.init(app); AppSettings.init(app) }
+/**
+ * The app's actions, shared by the Android and Windows apps.
+ * [Repo] and [AppSettings] must be initialised before this is created.
+ */
+@OptIn(FlowPreview::class)
+class TrackerViewModel(dataDir: File, private val hooks: PlatformHooks) : ViewModel() {
 
     // ---- Sync between devices (Supabase) ----
 
-    private val cloud = Cloud.get(app)
+    private val cloud = Cloud.get(dataDir)
     private val _cloud = MutableStateFlow(CloudStatus(cloud.signedIn, cloud.email, lastSyncMs = cloud.lastSyncMs))
     val cloudStatus: StateFlow<CloudStatus> = _cloud.asStateFlow()
 
@@ -63,7 +70,7 @@ class TrackerViewModel(private val app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             try {
                 val r = withContext(Dispatchers.IO) { cloud.syncNow({ Repo.current }) { t -> Repo.update(t) } }
-                TimerSync.sync(app, Repo.current)
+                hooks.timerChanged(Repo.current)
                 _cloud.value = CloudStatus(true, cloud.email, false, cloud.lastSyncMs,
                     if (quiet) null else if (r.pushed + r.pulled == 0) "Everything is up to date" else "Synced: sent ${r.pushed}, received ${r.pulled}")
             } catch (t: Throwable) {
@@ -109,7 +116,7 @@ class TrackerViewModel(private val app: Application) : AndroidViewModel(app) {
     /** Changes that affect the running timer also refresh its notification and alarm. */
     private fun changeTimer(transform: (AppData) -> AppData) {
         Repo.update(transform)
-        TimerSync.sync(app, Repo.current)
+        hooks.timerChanged(Repo.current)
     }
 
     // ---- Projects ----
@@ -147,7 +154,7 @@ class TrackerViewModel(private val app: Application) : AndroidViewModel(app) {
     /** Saves a settings change and re-plans the running timer's alerts. */
     fun updateSettings(transform: (Settings) -> Settings) {
         AppSettings.update(transform)
-        TimerSync.sync(app, Repo.current)
+        hooks.timerChanged(Repo.current)
     }
 
     /** Deletes the project, its subprojects and all their sessions. */
@@ -187,11 +194,11 @@ class TrackerViewModel(private val app: Application) : AndroidViewModel(app) {
         val end = before.targetEnd ?: return
         if (System.currentTimeMillis() < end) return
         Repo.update { it.finishCountdownIfDue(System.currentTimeMillis()) ?: it }
-        TimerSync.notifyDone(app, Repo.current, before.projectId, before.targetMillis!!)
-        TimerSync.sync(app, Repo.current)
+        hooks.countdownFinished(Repo.current, before.projectId, before.targetMillis!!)
+        hooks.timerChanged(Repo.current)
     }
 
-    fun refreshTimerNotification() = TimerSync.sync(app, Repo.current)
+    fun refreshTimerNotification() = hooks.timerChanged(Repo.current)
 
     // ---- Sessions ----
 

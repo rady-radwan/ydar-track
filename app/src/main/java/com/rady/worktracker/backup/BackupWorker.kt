@@ -25,8 +25,7 @@ import java.util.concurrent.TimeUnit
 /** Runs the daily / weekly Google Drive backup in the background. */
 class BackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        Repo.init(applicationContext)
-        AppSettings.init(applicationContext)
+        com.rady.worktracker.data.AndroidInit.init(applicationContext)
         val s = AppSettings.current
         if (!s.driveConnected || s.backupFrequency == BackupFrequency.OFF) return Result.success()
         return try {

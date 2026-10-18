@@ -13,12 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rady.worktracker.R
 import com.rady.worktracker.data.AppFont
 
 /*
@@ -26,24 +24,6 @@ import com.rady.worktracker.data.AppFont
  * Charcoal and concrete with construction-gold accents, outlined tiles,
  * and clean Google-font titles. Dark by default; a light theme is available.
  */
-
-private fun family(r400: Int, r500: Int, r600: Int, r700: Int) = FontFamily(
-    Font(r400, FontWeight.Normal),
-    Font(r500, FontWeight.Medium),
-    Font(r600, FontWeight.SemiBold),
-    Font(r700, FontWeight.Bold),
-)
-
-fun fontFamilyFor(font: AppFont): FontFamily = when (font) {
-    AppFont.GOOGLE_SANS -> family(R.font.googlesans_400, R.font.googlesans_500, R.font.googlesans_600, R.font.googlesans_700)
-    AppFont.INTER -> family(R.font.inter_400, R.font.inter_500, R.font.inter_600, R.font.inter_700)
-    AppFont.ROBOTO -> family(R.font.roboto_400, R.font.roboto_500, R.font.roboto_600, R.font.roboto_700)
-    AppFont.MONTSERRAT -> family(R.font.montserrat_400, R.font.montserrat_500, R.font.montserrat_600, R.font.montserrat_700)
-    AppFont.OPEN_SANS -> family(R.font.opensans_400, R.font.opensans_500, R.font.opensans_600, R.font.opensans_700)
-    AppFont.WORK_SANS -> family(R.font.worksans_400, R.font.worksans_500, R.font.worksans_600, R.font.worksans_700)
-    AppFont.LATO -> family(R.font.lato_400, R.font.lato_500, R.font.lato_600, R.font.lato_700)
-    AppFont.JOSEFIN_SANS -> family(R.font.josefinsans_400, R.font.josefinsans_500, R.font.josefinsans_600, R.font.josefinsans_700)
-}
 
 @Immutable
 data class Palette(

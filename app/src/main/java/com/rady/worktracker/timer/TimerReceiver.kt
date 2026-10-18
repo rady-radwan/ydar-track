@@ -11,8 +11,7 @@ import com.rady.worktracker.data.TimerEvent
 class TimerReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        Repo.init(context)
-        AppSettings.init(context)
+        com.rady.worktracker.data.AndroidInit.init(context)
         val now = System.currentTimeMillis()
         when (intent.action) {
             ACTION_STOP -> Repo.updateNow { it.closeActive(now) }

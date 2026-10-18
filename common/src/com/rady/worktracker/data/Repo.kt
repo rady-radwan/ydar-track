@@ -1,6 +1,6 @@
 package com.rady.worktracker.data
 
-import android.content.Context
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -26,9 +26,9 @@ object Repo {
     @Volatile private var ready = false
 
     @Synchronized
-    fun init(context: Context) {
+    fun init(dir: File) {
         if (ready) return
-        store = Store(context.applicationContext)
+        store = Store(dir)
         _data.value = store.load()
         ready = true
     }

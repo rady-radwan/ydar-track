@@ -55,6 +55,9 @@ android {
         unitTests.all { it.testLogging { events("passed", "failed", "standard_out"); showStandardStreams = true } }
     }
 
+    // Code shared with the Windows app
+    sourceSets["main"].java.srcDir("../common/src")
+
     buildFeatures {
         compose = true
         buildConfig = true

@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,11 +40,10 @@ import com.rady.worktracker.data.Settings
 import com.rady.worktracker.data.ThemeMode
 import com.rady.worktracker.data.TimerEvent
 import com.rady.worktracker.data.WeekRank
-import com.rady.worktracker.timer.Sounds
 
 @Composable
 fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: TrackerViewModel) {
-    val context = LocalContext.current
+    val sounds = rememberSoundFx()
     val actions = rememberDataActions(vm)
     val hasData = data.sessions.isNotEmpty() || data.projects.isNotEmpty()
     fun set(t: (Settings) -> Settings) = vm.updateSettings(t)
@@ -90,7 +88,7 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
 
         item { CloudSyncCard(vm) }
 
-        item { DriveBackupCard(settings, vm) }
+        item { BackupSection(settings, vm) }
 
         item {
             Slab {
@@ -112,7 +110,7 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
                 Text("Each alert has its own sound. Tap the speaker to hear it.", style = MaterialTheme.typography.bodySmall, color = P.inkMuted)
                 Spacer(Modifier.height(6.dp))
                 SoundRow("Lap chime", "Open timer: plays every lap", settings.lapOn, { v -> set { it.copy(lapOn = v) } }) {
-                    Sounds.play(context, Sounds.forEvent(TimerEvent.LAP))
+                    sounds.event(TimerEvent.LAP)
                 }
                 if (settings.lapOn) {
                     FlowRow(Modifier.padding(start = 4.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -127,13 +125,13 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
                 }
                 HorizontalDivider(color = P.rule.copy(alpha = 0.6f))
                 SoundRow("Halfway", "Countdown: at the middle", settings.halfOn, { v -> set { it.copy(halfOn = v) } }) {
-                    Sounds.play(context, Sounds.forEvent(TimerEvent.HALF))
+                    sounds.event(TimerEvent.HALF)
                 }
                 SoundRow("5 minutes left", "Countdown: 5 minutes before the end", settings.fiveOn, { v -> set { it.copy(fiveOn = v) } }) {
-                    Sounds.play(context, Sounds.forEvent(TimerEvent.FIVE_LEFT))
+                    sounds.event(TimerEvent.FIVE_LEFT)
                 }
                 SoundRow("Time's up", "Countdown: at the end (the session is saved either way)", settings.endOn, { v -> set { it.copy(endOn = v) } }) {
-                    Sounds.play(context, Sounds.forEvent(TimerEvent.END))
+                    sounds.event(TimerEvent.END)
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
@@ -150,7 +148,7 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
                 Spacer(Modifier.height(6.dp))
                 ToggleRow("Show my rank when the app opens", settings.rankPopup) { v -> set { it.copy(rankPopup = v) } }
                 SoundRow("Rank sound", "A different sound for every rank", settings.rankSound, { v -> set { it.copy(rankSound = v) } }) {
-                    Sounds.play(context, Sounds.forRank(week.rank.level))
+                    sounds.rank(week.rank.level)
                 }
                 Spacer(Modifier.height(8.dp))
                 RankLadder(week)
@@ -180,7 +178,7 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
                     Text("Created by Claude", style = MaterialTheme.typography.titleSmall, color = P.ink)
                     Text("Inspired by the ideas of Rady", style = MaterialTheme.typography.bodySmall, color = P.inkMuted)
                     Spacer(Modifier.height(8.dp))
-                    Text("Version ${com.rady.worktracker.BuildConfig.VERSION_NAME} · Your data stays on this phone unless you back it up to Drive.", style = MaterialTheme.typography.labelSmall, color = P.inkMuted)
+                    Text("Version ${appVersion()} · Your data stays on this phone unless you back it up to Drive.", style = MaterialTheme.typography.labelSmall, color = P.inkMuted)
                 }
             }
         }

@@ -1,17 +1,15 @@
 package com.rady.worktracker.data
 
-import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
 /**
- * Saves everything to one small JSON file in the app's private storage.
- * Android's automatic backup includes this file, so your data comes back
- * when you set up a new phone with the same Google account.
+ * Saves everything to one small JSON file in the app's private folder.
+ * (Android's automatic backup includes it on the phone.)
  */
-class Store(context: Context) {
-    private val file = File(context.filesDir, "worktracker.json")
+class Store(dir: File) {
+    private val file = File(dir, "worktracker.json")
 
     fun load(): AppData {
         if (!file.exists()) return AppData()

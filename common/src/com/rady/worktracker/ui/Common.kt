@@ -2,9 +2,6 @@
 
 package com.rady.worktracker.ui
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -136,13 +132,6 @@ fun rememberNow(intervalMs: Long = 1_000L): State<Long> =
             delay(intervalMs - (System.currentTimeMillis() % intervalMs).coerceAtMost(intervalMs - 1))
         }
     }
-
-/** Time formatter that follows the phone's 12/24-hour setting. */
-@Composable
-fun rememberTimeFormat(): java.text.DateFormat {
-    val context = LocalContext.current
-    return remember(context) { android.text.format.DateFormat.getTimeFormat(context) }
-}
 
 fun java.text.DateFormat.formatMillis(ms: Long): String = format(Date(ms))
 
@@ -323,25 +312,6 @@ fun <T> Segmented(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> 
             }
         }
     }
-}
-
-// ---- Android's own date and time pickers ----
-
-fun pickDate(context: Context, initial: LocalDate, onPicked: (LocalDate) -> Unit) {
-    DatePickerDialog(
-        context,
-        { _, year, month, day -> onPicked(LocalDate.of(year, month + 1, day)) },
-        initial.year, initial.monthValue - 1, initial.dayOfMonth,
-    ).show()
-}
-
-fun pickTime(context: Context, initial: LocalTime, onPicked: (LocalTime) -> Unit) {
-    TimePickerDialog(
-        context,
-        { _, hour, minute -> onPicked(LocalTime.of(hour, minute)) },
-        initial.hour, initial.minute,
-        android.text.format.DateFormat.is24HourFormat(context),
-    ).show()
 }
 
 /** "37h of 100h · 63h to go · 37%" with a bar — progress toward a project's total-hours goal. */

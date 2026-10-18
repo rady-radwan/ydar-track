@@ -8,8 +8,7 @@ import com.rady.worktracker.timer.TimerSync
 class WorkTrackerApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        Repo.init(this)
-        AppSettings.init(this)
+        com.rady.worktracker.data.AndroidInit.init(this)
         TimerSync.ensureChannels(this)
     }
 }

@@ -2,12 +2,6 @@
 
 package com.rady.worktracker.ui
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -65,12 +59,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rady.worktracker.TrackerViewModel
 import com.rady.worktracker.data.ActiveTimer
@@ -108,8 +100,8 @@ fun minutesLabel(min: Int): String = when {
 @Composable
 fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowRank: () -> Unit) {
     val cloud by vm.cloudStatus.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("track", Context.MODE_PRIVATE) }
+    val pickers = rememberPickers()
+    val onTimerStarted = rememberOnTimerStarted(vm)
     val zone = remember { ZoneId.systemDefault() }
     val now by rememberNow()
     val timeFmt = rememberTimeFormat()
@@ -129,8 +121,8 @@ fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowR
     val hour = java.time.Instant.ofEpochMilli(now).atZone(zone).hour
     var showArchived by rememberSaveable { mutableStateOf(false) }
 
-    var mode by rememberSaveable { mutableStateOf(if (prefs.getBoolean("countdown", false)) TimerMode.COUNTDOWN else TimerMode.OPEN) }
-    var minutes by rememberSaveable { mutableIntStateOf(prefs.getInt("minutes", 60)) }
+    var mode by rememberSaveable { mutableStateOf(if (settings.countdownMode) TimerMode.COUNTDOWN else TimerMode.OPEN) }
+    var minutes by rememberSaveable { mutableIntStateOf(settings.countdownMinutes) }
     var showCustom by remember { mutableStateOf(false) }
     var showAddSession by remember { mutableStateOf(false) }
     var showNewProject by remember { mutableStateOf(false) }
@@ -139,21 +131,13 @@ fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowR
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    val notifPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-        vm.refreshTimerNotification()
-    }
-
     fun start(projectId: Long) {
-        prefs.edit().putBoolean("countdown", mode == TimerMode.COUNTDOWN).putInt("minutes", minutes).apply()
+        if (settings.countdownMode != (mode == TimerMode.COUNTDOWN) || settings.countdownMinutes != minutes) {
+            vm.updateSettings { it.copy(countdownMode = mode == TimerMode.COUNTDOWN, countdownMinutes = minutes) }
+        }
         vm.startTimer(projectId, if (mode == TimerMode.COUNTDOWN) minutes * 60_000L else null)
         scope.launch { listState.animateScrollToItem(0) }
-        if (Build.VERSION.SDK_INT >= 33 &&
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED &&
-            !prefs.getBoolean("asked_notif", false)
-        ) {
-            prefs.edit().putBoolean("asked_notif", true).apply()
-            notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        onTimerStarted()
     }
 
     val active = data.active
@@ -191,7 +175,7 @@ fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowR
                     onNoteChange = vm::setActiveNote,
                     onAdjustStart = {
                         val s = Instant.ofEpochMilli(active.start).atZone(zone)
-                        pickTime(context, s.toLocalTime()) { t ->
+                        pickers.time(s.toLocalTime()) { t ->
                             var picked = s.toLocalDate().atTime(t).atZone(zone).toInstant().toEpochMilli()
                             if (picked > System.currentTimeMillis()) picked -= 24L * 3_600_000L
                             vm.setActiveStart(picked)

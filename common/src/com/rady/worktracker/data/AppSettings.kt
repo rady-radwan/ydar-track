@@ -1,14 +1,12 @@
 package com.rady.worktracker.data
 
-import android.content.Context
-import android.content.SharedPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/** Reads and saves [Settings] in the phone's preferences, and shares them with the whole app. */
+/** Reads and saves [Settings] (phone preferences / a settings file on Windows) and shares them with the whole app. */
 object AppSettings {
-    private lateinit var prefs: SharedPreferences
+    private lateinit var prefs: KeyValues
     private val _flow = MutableStateFlow(Settings())
     val flow: StateFlow<Settings> = _flow.asStateFlow()
     val current: Settings get() = _flow.value
@@ -16,9 +14,9 @@ object AppSettings {
     @Volatile private var ready = false
 
     @Synchronized
-    fun init(context: Context) {
+    fun init(store: KeyValues) {
         if (ready) return
-        prefs = context.applicationContext.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        prefs = store
         val d = Settings()
         _flow.value = Settings(
             theme = runCatching { ThemeMode.valueOf(prefs.getString("theme", d.theme.name)!!) }.getOrDefault(d.theme),
@@ -39,6 +37,8 @@ object AppSettings {
             keepBackups = prefs.getInt("keepBackups", d.keepBackups),
             lastBackupAt = prefs.getLong("lastBackupAt", d.lastBackupAt),
             lastBackupStatus = prefs.getString("lastBackupStatus", d.lastBackupStatus) ?: "",
+            countdownMode = prefs.getBoolean("countdownMode", d.countdownMode),
+            countdownMinutes = prefs.getInt("countdownMinutes", d.countdownMinutes),
         )
         // v4: the app's look is dark gold — switch to Dark once (can be changed in Settings).
         if (!prefs.getBoolean("v4ThemeDark", false)) {
@@ -79,6 +79,8 @@ object AppSettings {
             .putInt("keepBackups", s.keepBackups)
             .putLong("lastBackupAt", s.lastBackupAt)
             .putString("lastBackupStatus", s.lastBackupStatus)
+            .putBoolean("countdownMode", s.countdownMode)
+            .putInt("countdownMinutes", s.countdownMinutes)
             .apply()
     }
 }

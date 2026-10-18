@@ -45,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -87,7 +86,7 @@ fun SessionDialog(
     onSave: (projectId: Long, start: Long, end: Long, note: String) -> Unit,
     onDelete: (() -> Unit)?,
 ) {
-    val context = LocalContext.current
+    val pickers = rememberPickers()
     val zone = remember { ZoneId.systemDefault() }
     val timeFmt = rememberTimeFormat()
     val dateFmt = remember { DateTimeFormatter.ofPattern("EEE, MMM d, yyyy") }
@@ -129,16 +128,16 @@ fun SessionDialog(
                 ProjectPicker(data, projectId, { projectId = it })
 
                 FieldLabel("Date")
-                FieldButton(date.format(dateFmt), { pickDate(context, date) { date = it; timesChanged = true } })
+                FieldButton(date.format(dateFmt), { pickers.date(date) { date = it; timesChanged = true } })
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         FieldLabel("Start")
-                        FieldButton(fmt(startTime), { pickTime(context, startTime) { startTime = it; timesChanged = true } })
+                        FieldButton(fmt(startTime), { pickers.time(startTime) { startTime = it; timesChanged = true } })
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         FieldLabel("End")
-                        FieldButton(fmt(endTime), { pickTime(context, endTime) { endTime = it; timesChanged = true } })
+                        FieldButton(fmt(endTime), { pickers.time(endTime) { endTime = it; timesChanged = true } })
                     }
                 }
                 Text(

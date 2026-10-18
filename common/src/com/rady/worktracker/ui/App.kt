@@ -23,12 +23,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rady.worktracker.TrackerViewModel
 import com.rady.worktracker.data.AppSettings
 import com.rady.worktracker.data.QuoteContext
@@ -38,7 +36,6 @@ import com.rady.worktracker.data.pickQuote
 import com.rady.worktracker.data.streakDays
 import com.rady.worktracker.data.toLocalDate
 import com.rady.worktracker.data.weekRank
-import com.rady.worktracker.timer.Sounds
 import java.time.Instant
 import java.time.ZoneId
 
@@ -62,8 +59,8 @@ private fun AppTab.icon(): ImageVector = when (this) {
 private object AppSession { var rankShown = false }
 
 @Composable
-fun App(vm: TrackerViewModel = viewModel()) {
-    val context = LocalContext.current
+fun App(vm: TrackerViewModel) {
+    val sounds = rememberSoundFx()
     val data by vm.data.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(AppTab.TRACK) }
@@ -87,7 +84,7 @@ fun App(vm: TrackerViewModel = viewModel()) {
 
     fun showRank(withSound: Boolean) {
         rankQuote = quote()
-        if (withSound && settings.rankSound) Sounds.play(context, Sounds.forRank(week.rank.level))
+        if (withSound && settings.rankSound) sounds.rank(week.rank.level)
     }
 
     /** Celebrates a new, higher rank once per week; the first run and each new week start quietly. */
@@ -102,7 +99,7 @@ fun App(vm: TrackerViewModel = viewModel()) {
             AppSettings.setRankSeen(weekKey, week.rank.level)
             if (settings.rankPopup) {
                 rankUp = week.rank
-                if (settings.rankSound) Sounds.play(context, Sounds.forRank(week.rank.level))
+                if (settings.rankSound) sounds.rank(week.rank.level)
                 return true
             }
         }

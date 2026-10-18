@@ -33,24 +33,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rady.worktracker.R
 import com.rady.worktracker.data.Rank
 
 const val APP_NAME = "Ydar Track"
 const val SLOGAN = "Build yourself, one hour at a time."
 
-/** The Ydar Track logo: a head built like a construction project. */
-@Composable
-fun LogoMark(size: Dp) {
-    Image(painterResource(R.drawable.logo_mark), contentDescription = "Ydar Track logo", modifier = Modifier.height(size).aspectRatio(520f / 631f))
-}
 
 /** "YDAR TRACK" with the Y in gold. */
 @Composable
