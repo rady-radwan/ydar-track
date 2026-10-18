@@ -71,6 +71,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rady.worktracker.TrackerViewModel
 import com.rady.worktracker.data.ActiveTimer
 import com.rady.worktracker.data.AppData
@@ -106,6 +107,7 @@ fun minutesLabel(min: Int): String = when {
 
 @Composable
 fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowRank: () -> Unit) {
+    val cloud by vm.cloudStatus.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("track", Context.MODE_PRIVATE) }
     val zone = remember { ZoneId.systemDefault() }
@@ -176,6 +178,9 @@ fun TrackScreen(data: AppData, settings: Settings, vm: TrackerViewModel, onShowR
                 onStripClick = if (active == null && data.projects.isNotEmpty()) {
                     { scope.launch { listState.animateScrollToItem(3) } }
                 } else null,
+                syncLabel = if (cloud.signedIn) syncAgo(cloud.lastSyncMs, now, cloud.error) else null,
+                syncing = cloud.syncing,
+                onSync = { vm.syncNow() },
             )
         }
 
@@ -719,5 +724,18 @@ fun Stepper(label: String, value: Int, onMinus: () -> Unit, onPlus: () -> Unit, 
         Text(display ?: value.toString().padStart(2, '0'), style = MaterialTheme.typography.displaySmall, color = P.ink)
         Text(label, style = MaterialTheme.typography.labelMedium, color = P.inkMuted)
         IconButton(onClick = onMinus) { Icon(ChevronIcon, contentDescription = "Less $label") }
+    }
+}
+
+/** "Synced now" / "Synced 5m ago" / "Sync failed" for the Refresh button. */
+fun syncAgo(lastMs: Long, now: Long, error: Boolean): String {
+    if (error) return "Retry sync"
+    if (lastMs <= 0L) return "Sync"
+    val min = (now - lastMs) / 60_000L
+    return when {
+        min < 1 -> "Synced"
+        min < 60 -> "${min}m ago"
+        min < 24 * 60 -> "${min / 60}h ago"
+        else -> "${min / (24 * 60)}d ago"
     }
 }

@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rady.worktracker.TrackerViewModel
@@ -109,6 +111,8 @@ fun App(vm: TrackerViewModel = viewModel()) {
 
     // Save a countdown the moment it reaches its goal while the app is open.
     LaunchedEffect(now) { vm.checkCountdown() }
+    // Get the latest from your other devices whenever the app comes to the front.
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { vm.syncNow(quiet = true) }
     LaunchedEffect(Unit) {
         vm.refreshTimerNotification()
         if (!AppSession.rankShown) {

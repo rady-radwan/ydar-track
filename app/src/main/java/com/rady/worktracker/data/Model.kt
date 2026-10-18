@@ -51,6 +51,7 @@ data class AppData(
     val projects: List<Project> = emptyList(),
     val sessions: List<Session> = emptyList(),
     val active: ActiveTimer? = null,
+    /** Kept for old data files; new records use [IdGen] so IDs are unique across devices. */
     val nextId: Long = 1L,
 ) {
     fun project(id: Long): Project? = projects.firstOrNull { it.id == id }
@@ -109,8 +110,8 @@ data class AppData(
         val a = active ?: return this
         val end = minOf(now, a.targetEnd ?: Long.MAX_VALUE)
         if (end - a.start < 1_000L) return copy(active = null)
-        val s = Session(id = nextId, projectId = a.projectId, start = a.start, end = end, note = a.note.trim())
-        return copy(sessions = sessions + s, active = null, nextId = nextId + 1)
+        val s = Session(id = IdGen.next(), projectId = a.projectId, start = a.start, end = end, note = a.note.trim())
+        return copy(sessions = sessions + s, active = null)
     }
 
     /** If a countdown has reached its target, save it. Returns null when nothing changed. */
@@ -120,9 +121,9 @@ data class AppData(
     }
 
     fun addProject(name: String, color: Int, emoji: String, parentId: Long?, weeklyGoalMin: Int = 0, totalGoalMin: Int = 0): Pair<AppData, Long> {
-        val id = nextId
+        val id = IdGen.next()
         val p = Project(id, name.trim(), color, emoji.trim(), parentId, weeklyGoalMin, totalGoalMin)
-        return copy(projects = projects + p, nextId = nextId + 1) to id
+        return copy(projects = projects + p) to id
     }
 
     /** Deletes a project, its subprojects, and all their sessions. */

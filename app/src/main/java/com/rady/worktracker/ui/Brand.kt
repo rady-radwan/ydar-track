@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -71,6 +73,10 @@ fun HomeBanner(
     strip: String,
     modifier: Modifier = Modifier,
     onStripClick: (() -> Unit)? = null,
+    /** "Synced 2m ago" etc.; null hides the Refresh button (not signed in). */
+    syncLabel: String? = null,
+    syncing: Boolean = false,
+    onSync: (() -> Unit)? = null,
 ) {
     val p = P
     val sky = if (p.dark) listOf(Color(0xFF2A2214), p.banner, p.banner) else listOf(Color(0xFFFFE7B0), p.banner, p.banner)
@@ -87,17 +93,32 @@ fun HomeBanner(
                 Text(quote, style = MaterialTheme.typography.bodySmall, color = p.inkMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
         }
-        Surface(
-            onClick = { onStripClick?.invoke() },
-            enabled = onStripClick != null,
-            color = p.accent,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(
-                strip, color = p.onAccent, style = MaterialTheme.typography.titleMedium,
-                maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp),
-            )
+        Row(Modifier.fillMaxWidth().background(p.accent), verticalAlignment = Alignment.CenterVertically) {
+            Surface(
+                onClick = { onStripClick?.invoke() },
+                enabled = onStripClick != null,
+                color = Color.Transparent,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(
+                    strip, color = p.onAccent, style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp),
+                )
+            }
+            if (syncLabel != null && onSync != null) {
+                Surface(onClick = onSync, enabled = !syncing, color = Color.Transparent) {
+                    Row(Modifier.padding(horizontal = 12.dp, vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            androidx.compose.material.icons.Icons.Default.Refresh, contentDescription = "Refresh",
+                            tint = p.onAccent, modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(if (syncing) "Syncing…" else syncLabel, color = p.onAccent,
+                            style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                    }
+                }
+            }
         }
     }
 }

@@ -334,7 +334,7 @@ object ExcelImport {
             if (key in existing) { dupes++; continue }
             existing += key
             val note = cell(row, cols[Col.NOTE])?.text?.trim().orEmpty()
-            data = data.copy(sessions = data.sessions + Session(data.nextId, pid, startMs, endMs, note), nextId = data.nextId + 1)
+            data = data.copy(sessions = data.sessions + Session(IdGen.next(), pid, startMs, endMs, note))
             added++
         }
         return ImportPlan(data, used.name, added, dupes, created, issues)

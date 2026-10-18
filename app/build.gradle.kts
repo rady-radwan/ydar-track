@@ -51,6 +51,10 @@ android {
         jvmTarget = "17"
     }
 
+    testOptions {
+        unitTests.all { it.testLogging { events("passed", "failed", "standard_out"); showStandardStreams = true } }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -76,4 +80,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
 }

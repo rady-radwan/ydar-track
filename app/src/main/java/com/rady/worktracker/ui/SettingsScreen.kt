@@ -88,6 +88,8 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
             }
         }
 
+        item { CloudSyncCard(vm) }
+
         item { DriveBackupCard(settings, vm) }
 
         item {
