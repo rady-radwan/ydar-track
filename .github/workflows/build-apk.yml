@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Android + Windows
 
 # Runs every time you upload changes, and can also be started by hand
 # from the "Actions" tab with the "Run workflow" button.
@@ -35,6 +35,9 @@ jobs:
           chmod +x ./gradlew
           set -o pipefail
           ./gradlew assembleDebug --stacktrace 2>&1 | tee build.log
+
+      - name: Check the Windows app compiles
+        run: ./gradlew :desktop:compileKotlin --stacktrace 2>&1 | tee -a build.log
 
       - name: Test sync (engine + live Supabase)
         env:
@@ -86,3 +89,44 @@ jobs:
           git add -A
           git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "CI run ${{ github.run_number }}: ${{ job.status }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-status
+
+  windows:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build the Windows installers
+        shell: bash
+        run: ./gradlew :desktop:packageMsi :desktop:packageExe --stacktrace 2>&1 | tee win.log
+
+      - name: Add them to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="5.0.${GITHUB_RUN_NUMBER}"
+          cp desktop/build/compose/binaries/main/msi/*.msi "YdarTrack-Windows-v$V.msi"
+          cp desktop/build/compose/binaries/main/exe/*.exe "YdarTrack-Windows-Setup-v$V.exe"
+          gh release upload "v$V" "YdarTrack-Windows-v$V.msi" "YdarTrack-Windows-Setup-v$V.exe" --clobber
+
+      - name: Report Windows build
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p /tmp/wreport && cd /tmp/wreport
+          { echo "status: ${{ job.status }}"; echo "run: ${{ github.run_number }}";
+            grep -E "^e: |error:|What went wrong|FAILED|Exception" -A6 "$GITHUB_WORKSPACE/win.log" | head -200 || true
+            echo "==== tail ===="; tail -60 "$GITHUB_WORKSPACE/win.log" || true; } > status.txt
+          git init -q && git checkout -q -b ci-windows && git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "Windows run ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-windows

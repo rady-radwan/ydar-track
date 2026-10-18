@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "WorkTracker"
 include(":app")
+include(":desktop")
