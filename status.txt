@@ -1,0 +1,48 @@
+status: success
+run: 9
+==== tail ====
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Task :downloadWix
+Download https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip
+
+> Task :desktop:checkRuntime
+> Task :unzipWix
+> Task :desktop:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :desktop:convertXmlValueResourcesForMain NO-SOURCE
+> Task :desktop:copyNonXmlValueResourcesForMain NO-SOURCE
+> Task :desktop:prepareComposeResourcesTaskForMain NO-SOURCE
+> Task :desktop:generateResourceAccessorsForMain SKIPPED
+> Task :desktop:generateActualResourceCollectorsForMain SKIPPED
+> Task :desktop:generateComposeResClass SKIPPED
+> Task :desktop:assembleMainResources
+> Task :desktop:processResources
+> Task :desktop:createRuntimeImage
+> Task :desktop:prepareAppResources NO-SOURCE
+> Task :desktop:unpackDefaultComposeDesktopJvmApplicationResources
+
+> Task :desktop:compileKotlin
+w: file:///D:/a/ydar-track/ydar-track/desktop/src/main/kotlin/com/rady/worktracker/desktop/Main.kt:43:20 'fun painterResource(resourcePath: String): Painter' is deprecated. Migrate to the Compose resources library. See https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-images-resources.html If you need to load resources specificly from Java classpath, you should still use the new resource library and use a snippet from https://github.com/JetBrains/compose-multiplatform-core/pull/1457.
+w: file:///D:/a/ydar-track/ydar-track/desktop/src/main/kotlin/com/rady/worktracker/desktop/Main.kt:47:20 'fun painterResource(resourcePath: String): Painter' is deprecated. Migrate to the Compose resources library. See https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-images-resources.html If you need to load resources specificly from Java classpath, you should still use the new resource library and use a snippet from https://github.com/JetBrains/compose-multiplatform-core/pull/1457.
+w: file:///D:/a/ydar-track/ydar-track/desktop/src/main/kotlin/com/rady/worktracker/ui/Platform.kt:59:11 'fun painterResource(resourcePath: String): Painter' is deprecated. Migrate to the Compose resources library. See https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-images-resources.html If you need to load resources specificly from Java classpath, you should still use the new resource library and use a snippet from https://github.com/JetBrains/compose-multiplatform-core/pull/1457.
+
+> Task :desktop:compileJava NO-SOURCE
+> Task :desktop:classes
+> Task :desktop:jar
+> Task :desktop:packageMsi
+The distribution is written to D:\a\ydar-track\ydar-track\desktop\build\compose\binaries\main\msi\Ydar Track-5.0.9.msi
+
+> Task :desktop:packageExe
+The distribution is written to D:\a\ydar-track\ydar-track\desktop\build\compose\binaries\main\exe\Ydar Track-5.0.9.exe
+gradle/actions: Writing build results to D:\a\_temp\.gradle-actions\build-results\__run-1792300339004.json
+
+[Incubating] Problems report is available at: file:///D:/a/ydar-track/ydar-track/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 2m 11s
+11 actionable tasks: 11 executed
