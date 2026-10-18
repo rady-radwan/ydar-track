@@ -1,0 +1,98 @@
+status: success
+sha: 6142004303501477399157a814cf49c2b3cdaad2
+run: 9
+==== errors ====
+==== tests ====
+    phone pushed 3
+    pc pulled 19
+    wrong password -> Wrong email or password.
+    LIVE SYNC TEST PASSED
+CloudLiveTest > phoneAndPcSync PASSED
+    PASS first phone sync uploads everything
+    PASS pc gets everything
+    PASS both edits merged
+    PASS archive arrived on pc
+    PASS deletion arrived on pc
+    PASS new project arrived on phone
+    PASS new ids are unique and big
+    PASS project deletion cascades to phone
+    PASS running timer shows on pc
+    PASS timer stopped on pc -> phone timer cleared and session saved
+    PASS conflict: last sync wins on both
+    PASS edit during sync kept locally
+    PASS edit during sync sent next time
+    PASS idle sync pushes nothing
+    PASS fresh device matches
+    PASS reinstalled device merges without deleting
+SyncEngineTest > twoDevicesStayInSync PASSED
+==== tail ====
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig
+> Task :app:checkDebugAarMetadata
+> Task :app:processDebugNavigationResources
+> Task :app:generateDebugResValues
+> Task :app:compileDebugNavigationResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:mergeDebugResources
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebug
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :app:mergeDebugJniLibFolders
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeDebugNativeLibs
+> Task :app:mergeLibDexDebug
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so. Run with --info option to learn more.
+
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:processDebugResources
+> Task :app:mergeExtDexDebug
+> Task :app:compileDebugKotlin
+> Task :app:compileDebugJavaWithJavac
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:processDebugJavaRes
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1792300093078.json
+
+BUILD SUCCESSFUL in 39s
+39 actionable tasks: 39 executed
+> Task :desktop:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :desktop:convertXmlValueResourcesForMain NO-SOURCE
+> Task :desktop:copyNonXmlValueResourcesForMain NO-SOURCE
+> Task :desktop:prepareComposeResourcesTaskForMain NO-SOURCE
+> Task :desktop:generateResourceAccessorsForMain SKIPPED
+> Task :desktop:generateActualResourceCollectorsForMain SKIPPED
+> Task :desktop:generateComposeResClass SKIPPED
+
+> Task :desktop:compileKotlin
+w: file:///home/runner/work/ydar-track/ydar-track/desktop/src/main/kotlin/com/rady/worktracker/desktop/Main.kt:43:20 'fun painterResource(resourcePath: String): Painter' is deprecated. Migrate to the Compose resources library. See https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-images-resources.html If you need to load resources specificly from Java classpath, you should still use the new resource library and use a snippet from https://github.com/JetBrains/compose-multiplatform-core/pull/1457.
+w: file:///home/runner/work/ydar-track/ydar-track/desktop/src/main/kotlin/com/rady/worktracker/desktop/Main.kt:47:20 'fun painterResource(resourcePath: String): Painter' is deprecated. Migrate to the Compose resources library. See https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-images-resources.html If you need to load resources specificly from Java classpath, you should still use the new resource library and use a snippet from https://github.com/JetBrains/compose-multiplatform-core/pull/1457.
+w: file:///home/runner/work/ydar-track/ydar-track/desktop/src/main/kotlin/com/rady/worktracker/ui/Platform.kt:59:11 'fun painterResource(resourcePath: String): Painter' is deprecated. Migrate to the Compose resources library. See https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-images-resources.html If you need to load resources specificly from Java classpath, you should still use the new resource library and use a snippet from https://github.com/JetBrains/compose-multiplatform-core/pull/1457.
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1792300129629.json
+
+BUILD SUCCESSFUL in 13s
+1 actionable task: 1 executed

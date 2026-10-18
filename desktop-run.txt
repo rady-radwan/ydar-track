@@ -1,0 +1,19 @@
+> Task :desktop:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :desktop:convertXmlValueResourcesForMain NO-SOURCE
+> Task :desktop:copyNonXmlValueResourcesForMain NO-SOURCE
+> Task :desktop:prepareComposeResourcesTaskForMain NO-SOURCE
+> Task :desktop:generateResourceAccessorsForMain SKIPPED
+> Task :desktop:generateActualResourceCollectorsForMain SKIPPED
+> Task :desktop:generateComposeResClass SKIPPED
+> Task :desktop:compileKotlin UP-TO-DATE
+> Task :desktop:compileJava NO-SOURCE
+> Task :desktop:assembleMainResources
+> Task :desktop:processResources
+> Task :desktop:classes
+> Task :desktop:jar
+> Task :desktop:prepareAppResources NO-SOURCE
+
+> Task :desktop:run
+Tray is not supported on the current platform. Use the global property `isTraySupported` to check.
+[SKIKO] warn: Fallback to next API
+org.jetbrains.skiko.RenderException: Cannot create Linux GL context
