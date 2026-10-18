@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.auth.api.identity.Identity
@@ -48,6 +50,7 @@ import com.rady.worktracker.backup.DriveAuth
 import com.rady.worktracker.backup.DriveBackup
 import com.rady.worktracker.backup.DriveClient
 import com.rady.worktracker.backup.DriveFile
+import com.rady.worktracker.backup.DriveSetup
 import com.rady.worktracker.data.AppSettings
 import com.rady.worktracker.data.BackupFrequency
 import com.rady.worktracker.data.Settings
@@ -69,13 +72,20 @@ fun DriveBackupCard(settings: Settings, vm: TrackerViewModel) {
 
     fun toast(msg: String) = Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
 
+    var problem by remember { mutableStateOf<String?>(null) }
+    var showHelp by remember { mutableStateOf(false) }
+
     val authLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { res ->
         try {
             val result = Identity.getAuthorizationClient(context).getAuthorizationResultFromIntent(res.data ?: Intent())
             val t = result.accessToken
-            if (t != null) afterAuth?.invoke(t) else toast("Google Drive wasn't connected")
+            if (t != null) { problem = null; afterAuth?.invoke(t) }
+            else problem = "Google returned no access (result ${res.resultCode}). Check the setup steps."
         } catch (e: Throwable) {
-            toast("Google Drive wasn't connected")
+            problem = if (res.resultCode == android.app.Activity.RESULT_CANCELED && res.data == null)
+                "The Google screen was closed before access was given (result ${res.resultCode}). " +
+                    "If you didn't close it yourself, Google most likely doesn't recognise this app yet — tap “Setup help”."
+            else DriveSetup.explain(e)
         }
         afterAuth = null
     }
@@ -90,15 +100,23 @@ fun DriveBackupCard(settings: Settings, vm: TrackerViewModel) {
                     authLauncher.launch(IntentSenderRequest.Builder(pi.intentSender).build())
                 } else r.accessToken?.let(action)
             }
-            .addOnFailureListener { e ->
-                toast("Couldn't reach Google: ${e.message ?: "see the Drive setup steps in the README"}")
-            }
+            .addOnFailureListener { e -> problem = DriveSetup.explain(e) }
     }
 
     fun work(label: String, block: suspend () -> Unit) {
         scope.launch {
             busy = label
-            try { block() } catch (t: Throwable) { toast("${t.message?.take(160) ?: t.javaClass.simpleName}") } finally { busy = null }
+            try {
+                block(); problem = null
+            } catch (t: Throwable) {
+                val msg = t.message ?: t.javaClass.simpleName
+                problem = when {
+                    "accessNotConfigured" in msg || "has not been used" in msg || "is disabled" in msg ->
+                        "Google Drive API isn't enabled in your Google Cloud project — enable it (APIs & Services › Library), wait a few minutes, and try again."
+                    "UnknownHost" in t.javaClass.simpleName -> "No internet connection."
+                    else -> msg.take(200)
+                }
+            } finally { busy = null }
         }
     }
 
@@ -154,12 +172,18 @@ fun DriveBackupCard(settings: Settings, vm: TrackerViewModel) {
         )
         Spacer(Modifier.height(12.dp))
 
+        problem?.let {
+            Text("⚠️ $it", style = MaterialTheme.typography.bodySmall, color = P.danger)
+            Spacer(Modifier.height(8.dp))
+        }
+
         if (!settings.driveConnected) {
             Button(
                 onClick = { connect() }, enabled = busy == null,
                 modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = P.accent, contentColor = P.onAccent),
             ) { Text("Connect Google Drive", style = MaterialTheme.typography.titleSmall) }
+            TextButton(onClick = { showHelp = true }) { Text("Setup help", color = P.info) }
         } else {
             Text("AUTOMATIC BACKUP", style = MaterialTheme.typography.labelMedium, color = P.inkMuted)
             Spacer(Modifier.height(6.dp))
@@ -225,6 +249,8 @@ fun DriveBackupCard(settings: Settings, vm: TrackerViewModel) {
         }
     }
 
+    if (showHelp) DriveSetupHelp(onDismiss = { showHelp = false })
+
     driveList?.let { list ->
         AlertDialog(
             onDismissRequest = { driveList = null },
@@ -269,5 +295,53 @@ fun DriveBackupCard(settings: Settings, vm: TrackerViewModel) {
             },
             dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("Cancel") } },
         )
+    }
+}
+
+/** Shows exactly what to enter in Google Cloud, with copy buttons. */
+@Composable
+private fun DriveSetupHelp(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val pkg = remember { DriveSetup.packageName(context) }
+    val sha = remember { DriveSetup.sha1(context) }
+    val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
+    fun copy(label: String, v: String) {
+        clipboard.setText(androidx.compose.ui.text.AnnotatedString(v))
+        Toast.makeText(context, "$label copied", Toast.LENGTH_SHORT).show()
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = P.slab,
+        title = { Text("Connect Google Drive — one-time setup") },
+        text = {
+            Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Google only lets an app use Drive after it's registered in your Google Cloud project (you can use the same project as Reverday).",
+                    style = MaterialTheme.typography.bodySmall, color = P.inkMuted)
+                Text("1. console.cloud.google.com › your project › APIs & Services › Credentials › Create credentials › OAuth client ID › Android.",
+                    style = MaterialTheme.typography.bodyMedium, color = P.ink)
+                CopyRow("Package name", pkg) { copy("Package name", pkg) }
+                CopyRow("SHA-1 certificate fingerprint", sha) { copy("SHA-1", sha) }
+                Text("2. Make sure Google Drive API is enabled (APIs & Services › Library).", style = MaterialTheme.typography.bodyMedium, color = P.ink)
+                Text("3. OAuth consent screen › Audience: publish the app (In production), or add your Gmail under Test users.",
+                    style = MaterialTheme.typography.bodyMedium, color = P.ink)
+                Text("4. Wait 5 minutes, then tap Connect Google Drive again.", style = MaterialTheme.typography.bodyMedium, color = P.ink)
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Done") } },
+    )
+}
+
+@Composable
+private fun CopyRow(label: String, value: String, onCopy: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(P.slabRaised).clickable(onClick = onCopy).padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(label.uppercase(), style = MaterialTheme.typography.labelMedium, color = P.inkMuted)
+            Text(value, style = MaterialTheme.typography.bodySmall, color = P.ink)
+        }
+        Spacer(Modifier.width(8.dp))
+        Text("Copy", style = MaterialTheme.typography.labelLarge, color = P.accent)
     }
 }

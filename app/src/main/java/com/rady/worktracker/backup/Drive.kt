@@ -37,6 +37,38 @@ object DriveAuth {
     }
 }
 
+/** What Google needs to recognise this app, read from the installed app itself. */
+object DriveSetup {
+    fun packageName(context: Context): String = context.packageName
+
+    /** SHA-1 of the certificate this app is signed with, e.g. "1F:50:…". */
+    fun sha1(context: Context): String = runCatching {
+        val pm = context.packageManager
+        val certs = if (android.os.Build.VERSION.SDK_INT >= 28) {
+            val info = pm.getPackageInfo(context.packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES)
+            info.signingInfo?.apkContentsSigners ?: emptyArray()
+        } else {
+            @Suppress("DEPRECATION")
+            pm.getPackageInfo(context.packageName, android.content.pm.PackageManager.GET_SIGNATURES).signatures ?: emptyArray()
+        }
+        val md = java.security.MessageDigest.getInstance("SHA-1")
+        md.digest(certs.first().toByteArray()).joinToString(":") { "%02X".format(it) }
+    }.getOrDefault("unknown")
+
+    /** Turns Google's error codes into a plain explanation. */
+    fun explain(t: Throwable?): String {
+        val code = (t as? com.google.android.gms.common.api.ApiException)?.statusCode
+        return when (code) {
+            10 -> "Google doesn't recognise this app yet (error 10). The Android OAuth client is missing, or its package name or SHA-1 doesn't match — tap “Setup help”."
+            7 -> "No internet connection (error 7)."
+            16, 12501 -> "Cancelled."
+            8, 13 -> "Google Play services had a problem (error $code). Try again in a minute."
+            null -> t?.message?.take(160) ?: "Unknown error"
+            else -> "Google error $code: ${t.message?.take(140) ?: ""}"
+        }
+    }
+}
+
 data class DriveFile(val id: String, val name: String, val size: Long, val createdTime: String)
 
 class DriveException(message: String, val code: Int) : IOException(message)

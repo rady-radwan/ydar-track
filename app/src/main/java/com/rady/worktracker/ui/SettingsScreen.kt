@@ -174,6 +174,9 @@ fun SettingsScreen(data: AppData, settings: Settings, week: WeekRank, vm: Tracke
                     Wordmark(30.sp)
                     Text(SLOGAN, style = MaterialTheme.typography.bodyMedium, color = P.inkMuted)
                     Text("You are your greatest project. Keep building.", style = MaterialTheme.typography.bodySmall, color = P.accent)
+                    Spacer(Modifier.height(10.dp))
+                    Text("Created by Claude", style = MaterialTheme.typography.titleSmall, color = P.ink)
+                    Text("Inspired by the ideas of Rady", style = MaterialTheme.typography.bodySmall, color = P.inkMuted)
                     Spacer(Modifier.height(8.dp))
                     Text("Version ${com.rady.worktracker.BuildConfig.VERSION_NAME} · Your data stays on this phone unless you back it up to Drive.", style = MaterialTheme.typography.labelSmall, color = P.inkMuted)
                 }
