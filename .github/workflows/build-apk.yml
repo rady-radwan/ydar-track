@@ -39,6 +39,24 @@ jobs:
       - name: Check the Windows app compiles
         run: ./gradlew :desktop:compileKotlin --stacktrace 2>&1 | tee -a build.log
 
+      - name: Screenshot the Windows app (runs it on Linux with sample data)
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y -qq xvfb xdotool imagemagick > /dev/null
+          mkdir -p "/tmp/appdata/Ydar Track" /tmp/report
+          python3 tools/sample_data.py "/tmp/appdata/Ydar Track/worktracker.json"
+          Xvfb :99 -screen 0 1280x1000x24 &
+          sleep 3
+          (DISPLAY=:99 APPDATA=/tmp/appdata ./gradlew :desktop:run > desktop-run.log 2>&1 &)
+          sleep 100
+          DISPLAY=:99 import -window root /tmp/report/desktop-1-open.png
+          DISPLAY=:99 xdotool key Escape; sleep 3
+          DISPLAY=:99 import -window root /tmp/report/desktop-2-home.png
+          WID=$(DISPLAY=:99 xdotool search --name "Ydar Track" | head -1)
+          DISPLAY=:99 xdotool mousemove --window "$WID" 280 600 click 5 click 5 click 5 click 5 click 5; sleep 3
+          DISPLAY=:99 import -window root /tmp/report/desktop-3-scrolled.png
+          tail -40 desktop-run.log > /tmp/report/desktop-run.txt
+
       - name: Test sync (engine + live Supabase)
         env:
           YDAR_LIVE_TEST: "1"
